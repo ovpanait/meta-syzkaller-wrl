@@ -17,6 +17,4 @@ SRCREV = "77e2b66864e69c17416614228723a1ebd3581ddc"
 
 GO_LINKMODE_append += "-X github.com/google/syzkaller/prog.GitRevision=${SRCREV}"
 
-INHIBIT_SYSROOT_STRIP = "1"
-
 BBCLASSEXTEND += "native"
