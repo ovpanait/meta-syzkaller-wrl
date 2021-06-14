@@ -1,0 +1,64 @@
+From cce866155b5b96be83fa5ce8c7a56a1b0dd86cac Mon Sep 17 00:00:00 2001
+From: "Ahmed S. Darwish" <a.darwish@linutronix.de>
+Date: Mon, 19 Oct 2020 12:06:40 +0200
+Subject: [PATCH] usb: gadget: udc: Remove in_interrupt()/in_irq() from
+ comments
+
+The usage of in_irq()/in_interrupt() in drivers is phased out for various
+reasons.
+
+The context description for usb_gadget_giveback_request() is misleading as
+in_interupt() means: hard interrupt or soft interrupt or bottom half
+disabled regions. But it's also invoked from task context when endpoints
+are torn down. Remove it as it's more confusing than helpful.
+
+Replace also the in_irq() comment with plain text.
+
+Signed-off-by: Ahmed S. Darwish <a.darwish@linutronix.de>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-usb@vger.kernel.org
+
+Link: https://lore.kernel.org/r/20201019101110.744172050@linutronix.de
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/usb/gadget/udc/core.c      | 2 --
+ drivers/usb/gadget/udc/dummy_hcd.c | 6 ++++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/usb/gadget/udc/core.c b/drivers/usb/gadget/udc/core.c
+index debf54205d22..5b5cfeb6c14a 100644
+--- a/drivers/usb/gadget/udc/core.c
++++ b/drivers/usb/gadget/udc/core.c
+@@ -897,8 +897,6 @@ EXPORT_SYMBOL_GPL(usb_gadget_unmap_request);
+  * @ep: the endpoint to be used with with the request
+  * @req: the request being given back
+  *
+- * Context: in_interrupt()
+- *
+  * This is called by device controller drivers in order to return the
+  * completed request back to the gadget layer.
+  */
+diff --git a/drivers/usb/gadget/udc/dummy_hcd.c b/drivers/usb/gadget/udc/dummy_hcd.c
+index 53a227217f1c..1dde016ca86f 100644
+--- a/drivers/usb/gadget/udc/dummy_hcd.c
++++ b/drivers/usb/gadget/udc/dummy_hcd.c
+@@ -1754,8 +1754,10 @@ static int handle_control_request(struct dummy_hcd *dum_hcd, struct urb *urb,
+ 	return ret_val;
+ }
+ 
+-/* drive both sides of the transfers; looks like irq handlers to
+- * both drivers except the callbacks aren't in_irq().
++/*
++ * Drive both sides of the transfers; looks like irq handlers to both
++ * drivers except that the callbacks are invoked from soft interrupt
++ * context.
+  */
+ static void dummy_timer(struct timer_list *t)
+ {
+-- 
+2.17.1
+

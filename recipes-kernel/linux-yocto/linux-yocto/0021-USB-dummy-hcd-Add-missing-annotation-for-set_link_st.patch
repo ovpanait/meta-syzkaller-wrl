@@ -1,0 +1,33 @@
+From 7aca4393e6818311e26fe41909fad2f8577c9679 Mon Sep 17 00:00:00 2001
+From: Jules Irenge <jbi.octave@gmail.com>
+Date: Wed, 29 Apr 2020 11:05:27 +0100
+Subject: [PATCH] USB: dummy-hcd: Add missing annotation for set_link_state()
+
+Sparse reports a warning at set_link_state()
+
+warning: context imbalance in set_link_state() - unexpected unlock
+
+The root cause is the missing annotation at set_link_state()
+Add the missing __must_hold(&dum->lock)
+
+Signed-off-by: Jules Irenge <jbi.octave@gmail.com>
+Signed-off-by: Felipe Balbi <balbi@kernel.org>
+---
+ drivers/usb/gadget/udc/dummy_hcd.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/usb/gadget/udc/dummy_hcd.c b/drivers/usb/gadget/udc/dummy_hcd.c
+index 6e3e3ebf715f..39e053fe9a5a 100644
+--- a/drivers/usb/gadget/udc/dummy_hcd.c
++++ b/drivers/usb/gadget/udc/dummy_hcd.c
+@@ -427,6 +427,7 @@ static void set_link_state_by_speed(struct dummy_hcd *dum_hcd)
+ 
+ /* caller must hold lock */
+ static void set_link_state(struct dummy_hcd *dum_hcd)
++	__must_hold(&dum->lock)
+ {
+ 	struct dummy *dum = dum_hcd->dum;
+ 	unsigned int power_bit;
+-- 
+2.17.1
+

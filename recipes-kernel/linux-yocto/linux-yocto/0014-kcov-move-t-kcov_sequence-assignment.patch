@@ -1,0 +1,42 @@
+From eeb91f9a2e3e9766ae9fd1117bd19d87538f21bf Mon Sep 17 00:00:00 2001
+From: Andrey Konovalov <andreyknvl@google.com>
+Date: Thu, 4 Jun 2020 16:45:58 -0700
+Subject: [PATCH] kcov: move t->kcov_sequence assignment
+
+Move t->kcov_sequence assignment before assigning t->kcov_mode for
+consistency.
+
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Reviewed-by: Dmitry Vyukov <dvyukov@google.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Marco Elver <elver@google.com>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Link: http://lkml.kernel.org/r/5889efe35e0b300e69dba97216b1288d9c2428a8.1585233617.git.andreyknvl@google.com
+Link: http://lkml.kernel.org/r/f0283c676bab3335cb48bfe12d375a3da4719f59.1584655448.git.andreyknvl@google.com
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ kernel/kcov.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/kcov.c b/kernel/kcov.c
+index 96dbc198d166..7cd05bd1fada 100644
+--- a/kernel/kcov.c
++++ b/kernel/kcov.c
+@@ -318,10 +318,10 @@ static void kcov_start(struct task_struct *t, struct kcov *kcov,
+ 	/* Cache in task struct for performance. */
+ 	t->kcov_size = size;
+ 	t->kcov_area = area;
++	t->kcov_sequence = sequence;
+ 	/* See comment in check_kcov_mode(). */
+ 	barrier();
+ 	WRITE_ONCE(t->kcov_mode, mode);
+-	t->kcov_sequence = sequence;
+ }
+ 
+ static void kcov_stop(struct task_struct *t)
+-- 
+2.17.1
+

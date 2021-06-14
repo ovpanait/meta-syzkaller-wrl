@@ -1,0 +1,96 @@
+From 3021e69219e2f3df6d01243000db32d1325cdd0d Mon Sep 17 00:00:00 2001
+From: Andrey Konovalov <andreyknvl@google.com>
+Date: Wed, 10 Jun 2020 18:41:28 -0700
+Subject: [PATCH] kcov: check kcov_softirq in kcov_remote_stop()
+
+kcov_remote_stop() should check that the corresponding kcov_remote_start()
+actually found the specified remote handle and started collecting
+coverage.  This is done by checking the per thread kcov_softirq flag.
+
+A particular failure scenario where this was observed involved a softirq
+with a remote coverage collection section coming between check_kcov_mode()
+and the access to t->kcov_area in __sanitizer_cov_trace_pc().  In that
+softirq kcov_remote_start() bailed out after kcov_remote_find() check, but
+the matching kcov_remote_stop() didn't check if kcov_remote_start()
+succeeded, and overwrote per thread kcov parameters with invalid (zero)
+values.
+
+Fixes: 5ff3b30ab57d ("kcov: collect coverage from interrupts")
+Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Reviewed-by: Dmitry Vyukov <dvyukov@google.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Marco Elver <elver@google.com>
+Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Link: http://lkml.kernel.org/r/fcd1cd16eac1d2c01a66befd8ea4afc6f8d09833.1591576806.git.andreyknvl@google.com
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ kernel/kcov.c | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/kcov.c b/kernel/kcov.c
+index 55c5d883a93e..6afae0bcbac4 100644
+--- a/kernel/kcov.c
++++ b/kernel/kcov.c
+@@ -427,7 +427,8 @@ void kcov_task_exit(struct task_struct *t)
+ 	 *        WARN_ON(!kcov->remote && kcov->t != t);
+ 	 *
+ 	 * For KCOV_REMOTE_ENABLE devices, the exiting task is either:
+-	 * 2. A remote task between kcov_remote_start() and kcov_remote_stop().
++	 *
++	 * 1. A remote task between kcov_remote_start() and kcov_remote_stop().
+ 	 *    In this case we should print a warning right away, since a task
+ 	 *    shouldn't be exiting when it's in a kcov coverage collection
+ 	 *    section. Here t points to the task that is collecting remote
+@@ -437,7 +438,7 @@ void kcov_task_exit(struct task_struct *t)
+ 	 *        WARN_ON(kcov->remote && kcov->t != t);
+ 	 *
+ 	 * 2. The task that created kcov exiting without calling KCOV_DISABLE,
+-	 *    and then again we can make sure that t->kcov->t == t:
++	 *    and then again we make sure that t->kcov->t == t:
+ 	 *        WARN_ON(kcov->remote && kcov->t != t);
+ 	 *
+ 	 * By combining all three checks into one we get:
+@@ -764,7 +765,7 @@ static const struct file_operations kcov_fops = {
+  * Internally, kcov_remote_start() looks up the kcov device associated with the
+  * provided handle, allocates an area for coverage collection, and saves the
+  * pointers to kcov and area into the current task_struct to allow coverage to
+- * be collected via __sanitizer_cov_trace_pc()
++ * be collected via __sanitizer_cov_trace_pc().
+  * In turns kcov_remote_stop() clears those pointers from task_struct to stop
+  * collecting coverage and copies all collected coverage into the kcov area.
+  */
+@@ -972,16 +973,25 @@ void kcov_remote_stop(void)
+ 		local_irq_restore(flags);
+ 		return;
+ 	}
+-	kcov = t->kcov;
+-	area = t->kcov_area;
+-	size = t->kcov_size;
+-	sequence = t->kcov_sequence;
+-
++	/*
++	 * When in softirq, check if the corresponding kcov_remote_start()
++	 * actually found the remote handle and started collecting coverage.
++	 */
++	if (in_serving_softirq() && !t->kcov_softirq) {
++		local_irq_restore(flags);
++		return;
++	}
++	/* Make sure that kcov_softirq is only set when in softirq. */
+ 	if (WARN_ON(!in_serving_softirq() && t->kcov_softirq)) {
+ 		local_irq_restore(flags);
+ 		return;
+ 	}
+ 
++	kcov = t->kcov;
++	area = t->kcov_area;
++	size = t->kcov_size;
++	sequence = t->kcov_sequence;
++
+ 	kcov_stop(t);
+ 	if (in_serving_softirq()) {
+ 		t->kcov_softirq = 0;
+-- 
+2.17.1
+
