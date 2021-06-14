@@ -26,6 +26,8 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.logger.info("self.syzkaller_qemu_cpus %s" % self.syzkaller_qemu_cpus)
         self.syzkaller_vms = self.nprocs // self.syzkaller_qemu_cpus or 1
 
+        self.kernel_cmdline = "dummy_hcd.num=%s" % (self.syzkaller_qemu_cpus)
+
         if not os.path.exists(self.syzkaller_workdir):
             os.mkdir(self.syzkaller_workdir)
 
@@ -42,17 +44,19 @@ class TestSyzkallerWR(OESelftestTestCase):
 	"syzkaller": "%s",
 	"type": "qemu",
 	"reproduce" : false,
+	"sandbox": "none",
 	"vm": {
 		"count": %s,
 		"kernel": "%s",
+		"cmdline": "%s",
 		"cpu": %s,
 		"mem": %s
 	}
 }
 """
 % (self.syzkaller_workdir, self.kernel_objdir, self.kernel_src, self.rootfs, \
-   self.syzkaller_target, self.syzkaller_vms, self.kernel, self.syzkaller_qemu_cpus,
-   self.syzkaller_qemu_mem)
+   self.syzkaller_target, self.syzkaller_vms, self.kernel, self.kernel_cmdline, \
+   self.syzkaller_qemu_cpus, self.syzkaller_qemu_mem)
             )
 
     def setUpLocal(self):
