@@ -18,11 +18,11 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.syzkaller_cfg = os.path.join(self.syzkaller_workdir, 'wrl.cfg')
 
         bb_vars = get_bb_vars(['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS'])
-        self.syzkaller_fuzztime = bb_vars['SYZ_FUZZTIME'] or 3600
+        self.syzkaller_fuzztime = int(bb_vars['SYZ_FUZZTIME'] or 3600)
         self.logger.info("self.syzkaller_fuzztime %s" % self.syzkaller_fuzztime)
-        self.syzkaller_qemu_mem = bb_vars['SYZ_QEMU_MEM'] or 1024
+        self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'] or 1024)
         self.logger.info("self.syzkaller_qemu_mem %s" % self.syzkaller_qemu_mem)
-        self.syzkaller_qemu_cpus = bb_vars['SYZ_QEMU_CPUS'] or 2
+        self.syzkaller_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'] or 2)
         self.logger.info("self.syzkaller_qemu_cpus %s" % self.syzkaller_qemu_cpus)
         self.syzkaller_vms = self.nprocs // self.syzkaller_qemu_cpus or 1
 
