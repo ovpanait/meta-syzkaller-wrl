@@ -9,22 +9,18 @@ class TestSyzkallerWR(OESelftestTestCase):
     def setUpSyzkallerConfig(self):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
         syzkaller_native = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
-        self.logger.info("syz_target_sysroot %s" % syz_target_sysroot)
 
         self.syz_manager_bin = os.path.join(syzkaller_native, 'usr/bin/syz-manager')
         self.syzkaller_target = os.path.join(syz_target_sysroot, 'usr')
-        self.logger.info("self.syzkaller_target %s" % self.syzkaller_target)
         self.syzkaller_workdir = os.path.join(self.topdir, 'syzkaller_workdir')
         self.syzkaller_cfg = os.path.join(self.syzkaller_workdir, 'wrl.cfg')
 
         bb_vars = get_bb_vars(['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS',
                               'SYZ_DUMMY_HCD_NUM'])
         self.syzkaller_fuzztime = int(bb_vars['SYZ_FUZZTIME'] or 30) * 60
-        self.logger.info("self.syzkaller_fuzztime %s" % self.syzkaller_fuzztime)
         self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'] or 1024)
-        self.logger.info("self.syzkaller_qemu_mem %s" % self.syzkaller_qemu_mem)
         self.syzkaller_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'] or 2)
-        self.logger.info("self.syzkaller_qemu_cpus %s" % self.syzkaller_qemu_cpus)
+
         self.syzkaller_vms = self.nprocs // self.syzkaller_qemu_cpus or 1
 
         self.dummy_hcd_num = int(bb_vars['SYZ_DUMMY_HCD_NUM'] or 8)
