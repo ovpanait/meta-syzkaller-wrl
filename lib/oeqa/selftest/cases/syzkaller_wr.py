@@ -15,13 +15,16 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.syzkaller_workdir = os.path.join(self.topdir, 'syzkaller_workdir')
         self.syzkaller_cfg = os.path.join(self.syzkaller_workdir, 'wrl.cfg')
 
-        bb_vars = get_bb_vars(['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS',
-                              'SYZ_DUMMY_HCD_NUM'])
-        self.syzkaller_fuzztime = int(bb_vars['SYZ_FUZZTIME'] or 30) * 60
-        self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'] or 2048)
-        self.syzkaller_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'] or 2)
+        syz_fuzz_params = ['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS', 'SYZ_QEMU_VM_COUNT']
+        syz_aux_params = ['SYZ_DUMMY_HCD_NUM']
+        bb_vars = get_bb_vars(syz_fuzz_params + syz_aux_params)
+        for param in syz_fuzz_params:
+                self.assertTrue(bb_vars[param], '%s variable not set. Please configure %s fuzzing parameters in order to continue.' % (param, ', '.join(syz_fuzz_params)))
 
-        self.syzkaller_vms = self.nprocs // self.syzkaller_qemu_cpus or 1
+        self.syzkaller_fuzztime = int(bb_vars['SYZ_FUZZTIME']) * 60
+        self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'])
+        self.syzkaller_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'])
+        self.syzkaller_qemu_vms = int(bb_vars['SYZ_QEMU_VM_COUNT'])
 
         self.dummy_hcd_num = int(bb_vars['SYZ_DUMMY_HCD_NUM'] or 8)
         self.kernel_cmdline = "dummy_hcd.num=%s" % (self.dummy_hcd_num)
@@ -53,8 +56,8 @@ class TestSyzkallerWR(OESelftestTestCase):
 }
 """
 % (self.syzkaller_workdir, self.kernel_objdir, self.kernel_src, self.rootfs, \
-   self.syzkaller_target, self.syzkaller_vms, self.kernel, self.kernel_cmdline, \
-   self.syzkaller_qemu_cpus, self.syzkaller_qemu_mem)
+   self.syzkaller_target, self.syzkaller_qemu_vms, self.kernel,
+   self.kernel_cmdline, self.syzkaller_qemu_cpus, self.syzkaller_qemu_mem)
             )
 
     def setUpLocal(self):
