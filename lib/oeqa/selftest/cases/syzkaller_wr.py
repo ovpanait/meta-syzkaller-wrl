@@ -8,12 +8,12 @@ from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
 class TestSyzkallerWR(OESelftestTestCase):
     def setUpSyzkallerConfig(self):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
-        syzkaller_native = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
+        syz_native = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
 
-        self.syz_manager_bin = os.path.join(syzkaller_native, 'usr/bin/syz-manager')
-        self.syzkaller_target = os.path.join(syz_target_sysroot, 'usr')
-        self.syzkaller_workdir = os.path.join(self.topdir, 'syzkaller_workdir')
-        self.syzkaller_cfg = os.path.join(self.syzkaller_workdir, 'wrl.cfg')
+        self.syz_manager_bin = os.path.join(syz_native, 'usr/bin/syz-manager')
+        self.syz_target = os.path.join(syz_target_sysroot, 'usr')
+        self.syz_workdir = os.path.join(self.topdir, 'syz_workdir')
+        self.syz_cfg = os.path.join(self.syz_workdir, 'wrl.cfg')
 
         syz_fuzz_params = ['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS', 'SYZ_QEMU_VM_COUNT']
         syz_aux_params = ['SYZ_DUMMY_HCD_NUM']
@@ -21,18 +21,18 @@ class TestSyzkallerWR(OESelftestTestCase):
         for param in syz_fuzz_params:
                 self.assertTrue(bb_vars[param], '%s variable not set. Please configure %s fuzzing parameters in order to continue.' % (param, ', '.join(syz_fuzz_params)))
 
-        self.syzkaller_fuzztime = int(bb_vars['SYZ_FUZZTIME']) * 60
-        self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'])
-        self.syzkaller_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'])
-        self.syzkaller_qemu_vms = int(bb_vars['SYZ_QEMU_VM_COUNT'])
+        self.syz_fuzztime = int(bb_vars['SYZ_FUZZTIME']) * 60
+        self.syz_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'])
+        self.syz_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'])
+        self.syz_qemu_vms = int(bb_vars['SYZ_QEMU_VM_COUNT'])
 
         self.dummy_hcd_num = int(bb_vars['SYZ_DUMMY_HCD_NUM'] or 8)
         self.kernel_cmdline = "dummy_hcd.num=%s" % (self.dummy_hcd_num)
 
-        if not os.path.exists(self.syzkaller_workdir):
-            os.mkdir(self.syzkaller_workdir)
+        if not os.path.exists(self.syz_workdir):
+            os.mkdir(self.syz_workdir)
 
-        with open(self.syzkaller_cfg, 'w') as f:
+        with open(self.syz_cfg, 'w') as f:
             f.write(
 """
 {
@@ -55,9 +55,9 @@ class TestSyzkallerWR(OESelftestTestCase):
 	}
 }
 """
-% (self.syzkaller_workdir, self.kernel_objdir, self.kernel_src, self.rootfs, \
-   self.syzkaller_target, self.syzkaller_qemu_vms, self.kernel,
-   self.kernel_cmdline, self.syzkaller_qemu_cpus, self.syzkaller_qemu_mem)
+% (self.syz_workdir, self.kernel_objdir, self.kernel_src, self.rootfs, \
+   self.syz_target, self.syz_qemu_vms, self.kernel, self.kernel_cmdline, \
+   self.syz_qemu_cpus, self.syz_qemu_mem)
             )
 
     def setUpLocal(self):
@@ -93,4 +93,4 @@ IMAGE_FSTYPES = "%s"
         bitbake('syzkaller', output_log=self.logger)
 
     def test_syzkaller_wr(self):
-        runCmd([self.syz_manager_bin, '-config', self.syzkaller_cfg], timeout=self.syzkaller_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
+        runCmd([self.syz_manager_bin, '-config', self.syz_cfg], timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
