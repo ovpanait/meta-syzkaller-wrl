@@ -18,7 +18,7 @@ class TestSyzkallerWR(OESelftestTestCase):
         bb_vars = get_bb_vars(['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS',
                               'SYZ_DUMMY_HCD_NUM'])
         self.syzkaller_fuzztime = int(bb_vars['SYZ_FUZZTIME'] or 30) * 60
-        self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'] or 1024)
+        self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'] or 2048)
         self.syzkaller_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'] or 2)
 
         self.syzkaller_vms = self.nprocs // self.syzkaller_qemu_cpus or 1
