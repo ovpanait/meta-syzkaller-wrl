@@ -17,7 +17,8 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.syzkaller_workdir = os.path.join(self.topdir, 'syzkaller_workdir')
         self.syzkaller_cfg = os.path.join(self.syzkaller_workdir, 'wrl.cfg')
 
-        bb_vars = get_bb_vars(['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS'])
+        bb_vars = get_bb_vars(['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS',
+                              'SYZ_DUMMY_HCD_NUM'])
         self.syzkaller_fuzztime = int(bb_vars['SYZ_FUZZTIME'] or 30) * 60
         self.logger.info("self.syzkaller_fuzztime %s" % self.syzkaller_fuzztime)
         self.syzkaller_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'] or 1024)
@@ -26,7 +27,8 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.logger.info("self.syzkaller_qemu_cpus %s" % self.syzkaller_qemu_cpus)
         self.syzkaller_vms = self.nprocs // self.syzkaller_qemu_cpus or 1
 
-        self.kernel_cmdline = "dummy_hcd.num=%s" % (self.syzkaller_qemu_cpus)
+        self.dummy_hcd_num = int(bb_vars['SYZ_DUMMY_HCD_NUM'] or 8)
+        self.kernel_cmdline = "dummy_hcd.num=%s" % (self.dummy_hcd_num)
 
         if not os.path.exists(self.syzkaller_workdir):
             os.mkdir(self.syzkaller_workdir)
