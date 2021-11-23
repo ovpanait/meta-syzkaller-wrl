@@ -67,6 +67,13 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.machine = 'intel-x86-64'
         self.fstypes = "ext4"
 
+        self.write_config(
+"""
+MACHINE = "%s"
+IMAGE_FSTYPES = "%s"
+"""
+% (self.machine, self.fstypes))
+
         bb_vars = get_bb_vars(['TOPDIR', 'DEPLOY_DIR_IMAGE', 'STAGING_KERNEL_DIR'])
 
         self.topdir = bb_vars['TOPDIR']
@@ -79,14 +86,6 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.kernel_objdir = self.deploy_dir_image
 
         self.setUpSyzkallerConfig()
-
-        self.write_config(
-"""
-MACHINE = "%s"
-IMAGE_FSTYPES = "%s"
-"""
-% (self.machine, self.fstypes)
-        )
 
         bitbake(self.image, output_log=self.logger)
         bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
