@@ -22,7 +22,9 @@ GO_LINKMODE_append += "-X github.com/google/syzkaller/prog.GitRevision=${SRCREV}
 
 # Work around a "--set-interpreter" bug in patchelf that corrupts the binary
 # https://github.com/NixOS/patchelf/pull/243
-SSTATEPOSTUNPACKFUNCS_remove = "uninative_changeinterp"
+python uninative_changeinterp () {
+    return
+}
 
 export GOHOSTFLAGS="${GOBUILDFLAGS}"
 export GOTARGETFLAGS="${GOBUILDFLAGS}"
