@@ -1,13 +1,8 @@
-SUMMARY = ""
-DESCRIPTION = ""
-HOMEPAGE = ""
-BUGTRACKER = ""
-SECTION = "base"
-
-inherit go-mod
-
+DESCRIPTION = "syzkaller is an unsupervised coverage-guided kernel fuzzer"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://src/${GO_IMPORT}/LICENSE;md5=5335066555b14d832335aa4660d6c376"
+
+inherit go-mod
 
 GO_IMPORT = "github.com/google/syzkaller"
 
