@@ -28,18 +28,11 @@ python uninative_changeinterp () {
 
 export GOHOSTFLAGS="${GOBUILDFLAGS}"
 export GOTARGETFLAGS="${GOBUILDFLAGS}"
-
-TARGETOS = '${GOOS}'
-TARGETARCH = '${GOARCH}'
-TARGETVMARCH = '${GOARCH}'
+export TARGETOS = '${GOOS}'
+export TARGETARCH = '${GOARCH}'
+export TARGETVMARCH = '${GOARCH}'
 
 CGO_ENABLED = "0"
-
-do_compile_prepend() {
-    export TARGETOS
-    export TARGETARCH
-    export TARGETVMARCH
-}
 
 do_compile_class-native() {
     export HOSTOS="${GOHOSTOS}"
