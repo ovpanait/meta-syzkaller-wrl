@@ -53,20 +53,20 @@ do_compile_class-target() {
     oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}" REV="${SRCREV}"
 }
 
-SYZ_BINS_NATIVE = "\
-    syz-manager \
-    syz-runtest \
-    syz-repro \
-    syz-mutate \
-    syz-prog2c \
-    syz-db \
-    syz-upgrade \
-"
-
 do_install() {
+    SYZ_BINS_COMMON="\
+        syz-manager \
+        syz-runtest \
+        syz-repro \
+        syz-mutate \
+        syz-prog2c \
+        syz-db \
+        syz-upgrade \
+    "
+
     install -d ${D}${bindir}
 
-    for i in ${SYZ_BINS_NATIVE}; do
+    for i in ${SYZ_BINS_COMMON}; do
         install -m 0755 ${B}/${i} ${D}${bindir}
     done
 }
