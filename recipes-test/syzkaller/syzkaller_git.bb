@@ -63,14 +63,6 @@ SYZ_BINS_NATIVE = "\
     syz-upgrade \
 "
 
-SYZ_BINS_TARGET = "\
-    syz-fuzzer \
-    syz-execprog \
-    syz-stress \
-    syz-executor \
-"
-SYZ_TARGET_DIR = "${TARGETOS}_${TARGETARCH}"
-
 do_install() {
     install -d ${D}${bindir}
 
@@ -80,7 +72,15 @@ do_install() {
 }
 
 do_install_append_class-target() {
-    install -d ${D}${bindir}/${TARGETOS}_${TARGETARCH}
+    SYZ_TARGET_DIR="${TARGETOS}_${TARGETARCH}"
+    SYZ_BINS_TARGET=" \
+        syz-fuzzer \
+        syz-execprog \
+        syz-stress \
+        syz-executor \
+    "
+
+    install -d ${D}${bindir}/${SYZ_TARGET_DIR}
 
     for i in ${SYZ_BINS_TARGET}; do
         install -m 0755 ${B}/${SYZ_TARGET_DIR}/${i} ${D}${bindir}/${SYZ_TARGET_DIR}
