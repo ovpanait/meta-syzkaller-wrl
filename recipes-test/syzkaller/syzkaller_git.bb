@@ -27,8 +27,6 @@ SSTATEPOSTUNPACKFUNCS_remove = "uninative_changeinterp"
 export GOHOSTFLAGS="${GOBUILDFLAGS}"
 export GOTARGETFLAGS="${GOBUILDFLAGS}"
 
-HOSTOS = '${@'${GOHOSTOS}' if 'native' in d.getVar('${PN}') else '${GOOS}'}'
-HOSTARCH = '${@'${GOHOSTARCH}' if 'native' in d.getVar('${PN}') else '${GOARCH}'}'
 TARGETOS = '${GOOS}'
 TARGETARCH = '${GOARCH}'
 TARGETVMARCH = '${GOARCH}'
@@ -36,18 +34,20 @@ TARGETVMARCH = '${GOARCH}'
 CGO_ENABLED = "0"
 
 do_compile_prepend() {
-    export HOSTOS
-    export HOSTARCH
     export TARGETOS
     export TARGETARCH
     export TARGETVMARCH
 }
 
 do_compile_class-native() {
+    export HOSTOS="${GOHOSTOS}"
+    export HOSTARCH="${GOHOSTARCH}"
     oe_runmake host
 }
 
 do_compile_class-target() {
+    export HOSTOS="${GOOS}"
+    export HOSTARCH="${GOARCH}"
     oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}" REV="${SRCREV}"
 }
 
