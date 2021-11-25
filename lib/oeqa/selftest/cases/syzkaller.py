@@ -8,9 +8,7 @@ from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
 class TestSyzkaller(OESelftestTestCase):
     def setUpSyzkallerConfig(self):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
-        syz_native = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
 
-        syz_manager_bin = os.path.join(syz_native, 'usr/bin/syz-manager')
         syz_target = os.path.join(syz_target_sysroot, 'usr')
         syz_workdir = os.path.join(self.topdir, 'syz_workdir')
         syz_cfg = os.path.join(syz_workdir, 'syzkaller.cfg')
@@ -50,7 +48,6 @@ class TestSyzkaller(OESelftestTestCase):
    self.syz_qemu_vms, self.kernel, kernel_cmdline, self.syz_qemu_cpus, \
    self.syz_qemu_mem))
 
-        self.syz_manager_bin = syz_manager_bin
         self.syz_cfg = syz_cfg
 
     def setUpLocal(self):
@@ -98,5 +95,7 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
         bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
         bitbake('syzkaller', output_log=self.logger)
 
+        self.syz_native_sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
+
     def test_syzkaller(self):
-        runCmd([self.syz_manager_bin, '-config', self.syz_cfg], timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
+        runCmd(['syz-manager', '-config', self.syz_cfg], native_sysroot = self.syz_native_sysroot, timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
