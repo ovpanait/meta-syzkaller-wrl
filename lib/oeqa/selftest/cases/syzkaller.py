@@ -67,7 +67,7 @@ class TestSyzkaller(OESelftestTestCase):
 
         self.image = 'core-image-minimal'
         self.machine = 'qemux86-64'
-        self.fstypes = "ext4"
+        self.fstype = "ext4"
 
         self.write_config(
 """
@@ -76,7 +76,7 @@ IMAGE_FSTYPES = "%s"
 EXTRA_IMAGE_FEATURES += " ssh-server-openssh"
 IMAGE_ROOTFS_EXTRA_SPACE = "64000"
 """
-% (self.machine, self.fstypes))
+% (self.machine, self.fstype))
 
         bb_vars = get_bb_vars(['TOPDIR', 'DEPLOY_DIR_IMAGE', 'STAGING_KERNEL_DIR'])
 
@@ -86,7 +86,7 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
 
         self.nprocs = os.cpu_count() or 1
         self.kernel = os.path.join(self.deploy_dir_image, 'bzImage')
-        self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.ext4' % (self.image, self.machine))
+        self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.%s' % (self.image, self.machine, self.fstype))
         self.kernel_objdir = self.deploy_dir_image
 
         self.setUpSyzkallerConfig()
