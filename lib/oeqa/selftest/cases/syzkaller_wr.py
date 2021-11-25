@@ -5,7 +5,7 @@
 from oeqa.selftest.case import OESelftestTestCase
 from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
 
-class TestSyzkallerWR(OESelftestTestCase):
+class TestSyzkaller(OESelftestTestCase):
     def setUpSyzkallerConfig(self):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
         syz_native = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
@@ -13,7 +13,7 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.syz_manager_bin = os.path.join(syz_native, 'usr/bin/syz-manager')
         self.syz_target = os.path.join(syz_target_sysroot, 'usr')
         self.syz_workdir = os.path.join(self.topdir, 'syz_workdir')
-        self.syz_cfg = os.path.join(self.syz_workdir, 'wrl.cfg')
+        self.syz_cfg = os.path.join(self.syz_workdir, 'syzkaller.cfg')
 
         syz_fuzz_params = ['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS', 'SYZ_QEMU_VM_COUNT']
         syz_aux_params = ['SYZ_DUMMY_HCD_NUM']
@@ -27,7 +27,7 @@ class TestSyzkallerWR(OESelftestTestCase):
         self.syz_qemu_vms = int(bb_vars['SYZ_QEMU_VM_COUNT'])
 
         self.dummy_hcd_num = int(bb_vars['SYZ_DUMMY_HCD_NUM'] or 8)
-        self.kernel_cmdline = "dummy_hcd.num=%s" % (self.dummy_hcd_num)
+        self.kernel_cmdline = "rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
 
         if not os.path.exists(self.syz_workdir):
             os.mkdir(self.syz_workdir)
@@ -51,7 +51,9 @@ class TestSyzkallerWR(OESelftestTestCase):
 		"kernel": "%s",
 		"cmdline": "%s",
 		"cpu": %s,
-		"mem": %s
+		"mem": %s,
+		"qemu_args": "-device virtio-scsi-pci,id=scsi -device scsi-hd,drive=rootfs -enable-kvm -cpu host,migratable=off",
+		"image_device": "drive index=0,id=rootfs,if=none,media=disk,file="
 	}
 }
 """
@@ -61,16 +63,18 @@ class TestSyzkallerWR(OESelftestTestCase):
             )
 
     def setUpLocal(self):
-        super(TestSyzkallerWR, self).setUpLocal()
+        super(TestSyzkaller, self).setUpLocal()
 
-        self.image = 'wrlinux-image-glibc-core'
-        self.machine = 'intel-x86-64'
+        self.image = 'core-image-minimal'
+        self.machine = 'qemux86-64'
         self.fstypes = "ext4"
 
         self.write_config(
 """
 MACHINE = "%s"
 IMAGE_FSTYPES = "%s"
+EXTRA_IMAGE_FEATURES += " ssh-server-openssh"
+IMAGE_ROOTFS_EXTRA_SPACE = "64000"
 """
 % (self.machine, self.fstypes))
 
@@ -91,5 +95,5 @@ IMAGE_FSTYPES = "%s"
         bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
         bitbake('syzkaller', output_log=self.logger)
 
-    def test_syzkaller_wr(self):
+    def test_syzkaller(self):
         runCmd([self.syz_manager_bin, '-config', self.syz_cfg], timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
