@@ -84,7 +84,6 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
         self.deploy_dir_image = bb_vars['DEPLOY_DIR_IMAGE']
         self.kernel_src = bb_vars['STAGING_KERNEL_DIR']
 
-        self.nprocs = os.cpu_count() or 1
         self.kernel = os.path.join(self.deploy_dir_image, 'bzImage')
         self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.%s' % (self.image, self.machine, self.fstype))
         self.kernel_objdir = self.deploy_dir_image
