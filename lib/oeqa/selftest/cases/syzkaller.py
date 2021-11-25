@@ -10,17 +10,18 @@ class TestSyzkaller(OESelftestTestCase):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
         syz_native = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
 
-        self.syz_manager_bin = os.path.join(syz_native, 'usr/bin/syz-manager')
-        self.syz_target = os.path.join(syz_target_sysroot, 'usr')
-        self.syz_workdir = os.path.join(self.topdir, 'syz_workdir')
-        self.syz_cfg = os.path.join(self.syz_workdir, 'syzkaller.cfg')
+        syz_manager_bin = os.path.join(syz_native, 'usr/bin/syz-manager')
+        syz_target = os.path.join(syz_target_sysroot, 'usr')
+        syz_workdir = os.path.join(self.topdir, 'syz_workdir')
+        syz_cfg = os.path.join(syz_workdir, 'syzkaller.cfg')
 
-        self.kernel_cmdline = "rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
+        kernel_cmdline = "rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
+        kernel_objdir = self.deploy_dir_image
 
-        if not os.path.exists(self.syz_workdir):
-            os.mkdir(self.syz_workdir)
+        if not os.path.exists(syz_workdir):
+            os.mkdir(syz_workdir)
 
-        with open(self.syz_cfg, 'w') as f:
+        with open(syz_cfg, 'w') as f:
             f.write(
 """
 {
@@ -45,10 +46,12 @@ class TestSyzkaller(OESelftestTestCase):
 	}
 }
 """
-% (self.syz_workdir, self.kernel_objdir, self.kernel_src, self.rootfs, \
-   self.syz_target, self.syz_qemu_vms, self.kernel, self.kernel_cmdline, \
-   self.syz_qemu_cpus, self.syz_qemu_mem)
-            )
+% (syz_workdir, kernel_objdir, self.kernel_src, self.rootfs, syz_target, \
+   self.syz_qemu_vms, self.kernel, kernel_cmdline, self.syz_qemu_cpus, \
+   self.syz_qemu_mem))
+
+        self.syz_manager_bin = syz_manager_bin
+        self.syz_cfg = syz_cfg
 
     def setUpLocal(self):
         super(TestSyzkaller, self).setUpLocal()
@@ -88,7 +91,6 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
 
         self.kernel = os.path.join(self.deploy_dir_image, 'bzImage')
         self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.%s' % (self.image, self.machine, self.fstype))
-        self.kernel_objdir = self.deploy_dir_image
 
         self.setUpSyzkallerConfig()
 
