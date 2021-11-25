@@ -10,18 +10,16 @@ class TestSyzkaller(OESelftestTestCase):
     def setUpSyzkallerConfig(self):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
         syz_target = os.path.join(syz_target_sysroot, 'usr')
-        syz_workdir = os.path.join(self.topdir, 'syz_workdir')
-        syz_cfg = os.path.join(syz_workdir, 'syzkaller.cfg')
 
         qemu_native_bin = os.path.join(self.qemu_native_sysroot, 'usr/bin/qemu-system-x86_64')
         kernel_cmdline = "rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
         kernel_objdir = self.deploy_dir_image
         port = get_free_port()
 
-        if not os.path.exists(syz_workdir):
-            os.mkdir(syz_workdir)
+        if not os.path.exists(self.syz_workdir):
+            os.mkdir(self.syz_workdir)
 
-        with open(syz_cfg, 'w') as f:
+        with open(self.syz_cfg, 'w') as f:
             f.write(
 """
 {
@@ -47,11 +45,9 @@ class TestSyzkaller(OESelftestTestCase):
 	}
 }
 """
-% (port, syz_workdir, kernel_objdir, self.kernel_src, self.rootfs,
+% (port, self.syz_workdir, kernel_objdir, self.kernel_src, self.rootfs,
    syz_target, self.syz_qemu_vms, self.kernel, kernel_cmdline,
    self.syz_qemu_cpus, self.syz_qemu_mem, qemu_native_bin))
-
-        self.syz_cfg = syz_cfg
 
     def setUpLocal(self):
         super(TestSyzkaller, self).setUpLocal()
@@ -91,6 +87,8 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
         self.syz_qemu_vms = int(bb_vars['SYZ_QEMU_VM_COUNT'])
         self.dummy_hcd_num = int(bb_vars['SYZ_DUMMY_HCD_NUM'] or 8)
 
+        self.syz_workdir = os.path.join(self.topdir, 'syz_workdir')
+        self.syz_cfg = os.path.join(self.syz_workdir, 'syzkaller.cfg')
         self.kernel = os.path.join(self.deploy_dir_image, 'bzImage')
         self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.%s' % (self.image, self.machine, self.fstype))
 
