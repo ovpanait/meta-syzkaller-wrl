@@ -62,6 +62,7 @@ class TestSyzkaller(OESelftestTestCase):
 """
 MACHINE = "%s"
 IMAGE_FSTYPES = "%s"
+KERNEL_IMAGETYPES += "vmlinux"
 EXTRA_IMAGE_FEATURES += " ssh-server-openssh"
 IMAGE_ROOTFS_EXTRA_SPACE = "64000"
 """
