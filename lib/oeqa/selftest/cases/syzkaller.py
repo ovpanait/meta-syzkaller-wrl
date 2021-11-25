@@ -75,7 +75,8 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
         bb_vars = get_bb_vars(needed_vars)
 
         for var in syz_fuzz_vars:
-                self.assertTrue(bb_vars[var], '%s variable not set. Please configure %s fuzzing parameters in order to continue.' % (var, ', '.join(syz_fuzz_vars)))
+                if not bb_vars[var]:
+                    self.skipTest('%s variable not set. Please configure %s fuzzing parameters to run this test.' % (var, ', '.join(syz_fuzz_vars)))
 
         self.topdir = bb_vars['TOPDIR']
         self.deploy_dir_image = bb_vars['DEPLOY_DIR_IMAGE']
