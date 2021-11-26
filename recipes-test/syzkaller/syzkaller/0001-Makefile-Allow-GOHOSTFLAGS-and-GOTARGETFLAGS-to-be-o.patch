@@ -4,6 +4,12 @@ Date: Sat, 5 Jun 2021 19:31:13 +0000
 Subject: [PATCH] Makefile: Allow GOHOSTFLAGS and GOTARGETFLAGS to be
  overridden
 
+Allow the user to override host/target build flags (such as debug info
+generation flags). This is useful for example when syzkaller is compiled
+by the Yocto build system, as it always generates packages with debug info.
+
+Upstream-Status: Submitted [https://github.com/google/syzkaller/pull/2895]
+
 Signed-off-by: Ovidiu Panait <ovidiu.panait@windriver.com>
 ---
  Makefile | 4 ++--
