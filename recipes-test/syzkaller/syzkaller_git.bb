@@ -13,7 +13,7 @@ SRCREV = "77e2b66864e69c17416614228723a1ebd3581ddc"
 
 B = "${S}/src/${GO_IMPORT}/bin"
 
-GO_LINKMODE_append += "-X ${GO_IMPORT}/prog.GitRevision=${SRCREV}"
+GO_LINKMODE_append = "-X ${GO_IMPORT}/prog.GitRevision=${SRCREV}"
 
 # Work around a "--set-interpreter" bug in patchelf that corrupts the binary
 # https://github.com/NixOS/patchelf/pull/243
