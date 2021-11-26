@@ -6,7 +6,7 @@ inherit go-mod
 
 GO_IMPORT = "github.com/google/syzkaller"
 
-SRC_URI = "git://${GO_IMPORT};protocol=https;destsuffix=${BPN}-${PV}/src/${GO_IMPORT} \
+SRC_URI = "git://${GO_IMPORT};protocol=https;destsuffix=${BPN}-${PV}/src/${GO_IMPORT};branch=master \
            file://0001-Makefile-Allow-GOHOSTFLAGS-and-GOTARGETFLAGS-to-be-o.patch;patchdir=src/${GO_IMPORT}"
 
 SRCREV = "77e2b66864e69c17416614228723a1ebd3581ddc"
