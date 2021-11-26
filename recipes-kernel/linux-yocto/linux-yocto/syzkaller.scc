@@ -1,4 +1,0 @@
-define KFEATURE_DESCRIPTION "Enable syzkaller fuzzing support"
-define KFEATURE_COMPATIBILITY board
-
-kconf non-hardware syzkaller.cfg
