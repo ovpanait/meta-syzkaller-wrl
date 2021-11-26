@@ -13,13 +13,13 @@ SRCREV = "77e2b66864e69c17416614228723a1ebd3581ddc"
 
 B = "${S}/src/${GO_IMPORT}/bin"
 
-GO_LINKMODE_append = "-X ${GO_IMPORT}/prog.GitRevision=${SRCREV}"
+GO_LINKMODE:append = "-X ${GO_IMPORT}/prog.GitRevision=${SRCREV}"
 
 # Work around a "--set-interpreter" bug in patchelf that corrupts the binary
 # https://github.com/NixOS/patchelf/pull/243
-python uninative_changeinterp () {
-    return
-}
+#python uninative_changeinterp () {
+#    return
+#}
 
 export GOHOSTFLAGS="${GOBUILDFLAGS}"
 export GOTARGETFLAGS="${GOBUILDFLAGS}"
@@ -29,13 +29,13 @@ export TARGETVMARCH = '${GOARCH}'
 
 CGO_ENABLED = "0"
 
-do_compile_class-native() {
+do_compile:class-native() {
     export HOSTOS="${GOHOSTOS}"
     export HOSTARCH="${GOHOSTARCH}"
     oe_runmake host
 }
 
-do_compile_class-target() {
+do_compile:class-target() {
     export HOSTOS="${GOOS}"
     export HOSTARCH="${GOARCH}"
     oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}" REV="${SRCREV}"
@@ -59,7 +59,7 @@ do_install() {
     done
 }
 
-do_install_append_class-target() {
+do_install:append:class-target() {
     SYZ_TARGET_DIR="${TARGETOS}_${TARGETARCH}"
     SYZ_BINS_TARGET=" \
         syz-fuzzer \
