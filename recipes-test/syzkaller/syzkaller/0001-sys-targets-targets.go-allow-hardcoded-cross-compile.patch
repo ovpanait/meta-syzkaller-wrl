@@ -1,0 +1,56 @@
+From ea83ce0734e183ee45528756f79c9a33649745b2 Mon Sep 17 00:00:00 2001
+From: Ovidiu Panait <ovidiu.panait@windriver.com>
+Date: Sun, 5 Dec 2021 13:02:27 +0200
+Subject: [PATCH] sys/targets/targets.go: allow users to override hardcoded cross-compilers
+
+Currently, cross compilers names are hardcoded for each os/arch combo. However,
+toolchain tuples differ, especially when using vendor provided toolchians, so
+allow the user to specify the cross compiler for an os/arch combo using
+SYZ_CC_<os>_<arch> environment variables.
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Ovidiu Panait <ovidiu.panait@windriver.com>
+---
+ sys/targets/targets.go | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/sys/targets/targets.go b/sys/targets/targets.go
+index 2f696b4b3..5cc42422d 100644
+--- a/sys/targets/targets.go
++++ b/sys/targets/targets.go
+@@ -654,12 +654,16 @@ func initTarget(target *Target, OS, arch string) {
+ 	for i := range target.CFlags {
+ 		target.replaceSourceDir(&target.CFlags[i], sourceDir)
+ 	}
+-	if OS == Linux && arch == runtime.GOARCH {
+-		// Don't use cross-compiler for native compilation, there are cases when this does not work:
+-		// https://github.com/google/syzkaller/pull/619
+-		// https://github.com/google/syzkaller/issues/387
+-		// https://github.com/google/syzkaller/commit/06db3cec94c54e1cf720cdd5db72761514569d56
+-		target.Triple = ""
++	if OS == Linux {
++		if cc := os.Getenv("SYZ_CC_" + OS + "_" + arch); cc != "" {
++			target.CCompiler = cc
++		} else if arch == runtime.GOARCH {
++			// Don't use cross-compiler for native compilation, there are cases when this does not work:
++			// https://github.com/google/syzkaller/pull/619
++			// https://github.com/google/syzkaller/issues/387
++			// https://github.com/google/syzkaller/commit/06db3cec94c54e1cf720cdd5db72761514569d56
++			target.Triple = ""
++		}
+ 	}
+ 	if target.CCompiler == "" {
+ 		target.setCompiler(useClang)
+@@ -787,7 +791,7 @@ func (target *Target) lazyInit() {
+ 	// On CI we want to fail loudly if cross-compilation breaks.
+ 	// Also fail if SOURCEDIR_GOOS is set b/c in that case user probably assumes it will work.
+ 	if (target.OS != runtime.GOOS || !runningOnCI) && os.Getenv("SOURCEDIR_"+strings.ToUpper(target.OS)) == "" {
+-		if _, err := exec.LookPath(target.CCompiler); err != nil {
++		if _, err := exec.LookPath(strings.Fields(target.CCompiler)[0]); err != nil {
+ 			target.BrokenCompiler = fmt.Sprintf("%v is missing (%v)", target.CCompiler, err)
+ 			return
+ 		}
+-- 
+2.25.1
+

@@ -7,19 +7,14 @@ inherit go-mod
 GO_IMPORT = "github.com/google/syzkaller"
 
 SRC_URI = "git://${GO_IMPORT};protocol=https;destsuffix=${BPN}-${PV}/src/${GO_IMPORT};branch=master \
-           file://0001-Makefile-Allow-GOHOSTFLAGS-and-GOTARGETFLAGS-to-be-o.patch;patchdir=src/${GO_IMPORT}"
+           file://0001-sys-targets-targets.go-allow-hardcoded-cross-compile.patch;patchdir=src/${GO_IMPORT} \
+           "
 
-SRCREV = "77e2b66864e69c17416614228723a1ebd3581ddc"
+SRCREV = "d0830353e30438120e98eb8b8c4c176095093fad"
 
 B = "${S}/src/${GO_IMPORT}/bin"
 
 GO_LINKMODE:append = " -X ${GO_IMPORT}/prog.GitRevision=${SRCREV}"
-
-# Work around a "--set-interpreter" bug in patchelf that corrupts the binary
-# https://github.com/NixOS/patchelf/pull/243
-#python uninative_changeinterp () {
-#    return
-#}
 
 export GOHOSTFLAGS="${GOBUILDFLAGS}"
 export GOTARGETFLAGS="${GOBUILDFLAGS}"
@@ -38,6 +33,7 @@ do_compile:class-native() {
 do_compile:class-target() {
     export HOSTOS="${GOOS}"
     export HOSTARCH="${GOARCH}"
+    export SYZ_CC_${TARGETOS}_${TARGETARCH}="${CC}"
     oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}" REV="${SRCREV}"
 }
 
