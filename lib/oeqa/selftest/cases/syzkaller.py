@@ -67,7 +67,7 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
 % (self.machine, self.fstype))
 
         build_vars = ['TOPDIR', 'DEPLOY_DIR_IMAGE', 'STAGING_KERNEL_DIR']
-        syz_fuzz_vars = ['SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS', 'SYZ_QEMU_VM_COUNT']
+        syz_fuzz_vars = ['SYZ_WORKDIR', 'SYZ_FUZZTIME', 'SYZ_QEMU_MEM', 'SYZ_QEMU_CPUS', 'SYZ_QEMU_VM_COUNT']
         syz_aux_vars = ['SYZ_DUMMY_HCD_NUM']
 
         needed_vars = build_vars + syz_fuzz_vars + syz_aux_vars
@@ -81,13 +81,19 @@ IMAGE_ROOTFS_EXTRA_SPACE = "64000"
         self.deploy_dir_image = bb_vars['DEPLOY_DIR_IMAGE']
         self.kernel_src = bb_vars['STAGING_KERNEL_DIR']
 
+        """
+        SYZ_WORKDIR must be set to an absolute path where syzkaller will store
+        the corpus database, config, runtime and crash data generated during
+        fuzzing. It must be persistent between oe-selftest runs, so the fuzzer
+        does not start over again on each run.
+        """
+        self.syz_workdir = bb_vars['SYZ_WORKDIR']
         self.syz_fuzztime = int(bb_vars['SYZ_FUZZTIME']) * 60
         self.syz_qemu_mem = int(bb_vars['SYZ_QEMU_MEM'])
         self.syz_qemu_cpus = int(bb_vars['SYZ_QEMU_CPUS'])
         self.syz_qemu_vms = int(bb_vars['SYZ_QEMU_VM_COUNT'])
         self.dummy_hcd_num = int(bb_vars['SYZ_DUMMY_HCD_NUM'] or 8)
 
-        self.syz_workdir = os.path.join(self.topdir, 'syz_workdir')
         self.syz_cfg = os.path.join(self.syz_workdir, 'syzkaller.cfg')
         self.kernel = os.path.join(self.deploy_dir_image, 'bzImage')
         self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.%s' % (self.image, self.machine, self.fstype))
