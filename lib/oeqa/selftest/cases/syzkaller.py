@@ -12,7 +12,7 @@ class TestSyzkaller(OESelftestTestCase):
         syz_target = os.path.join(syz_target_sysroot, 'usr')
 
         qemu_native_bin = os.path.join(self.qemu_native_sysroot, 'usr/bin/qemu-system-x86_64')
-        kernel_cmdline = "rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
+        kernel_cmdline = "ip=dhcp rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
         kernel_objdir = self.deploy_dir_image
         port = get_free_port()
 
