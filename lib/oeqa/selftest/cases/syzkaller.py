@@ -108,14 +108,14 @@ SYZ_QEMU_CPUS="2"'    # number of cpus used by each qemu VM
         self.kernel = os.path.join(self.deploy_dir_image, 'bzImage')
         self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.%s' % (self.image, self.machine, self.fstype))
 
-        bitbake(self.image, output_log=self.logger)
-        bitbake('syzkaller', output_log=self.logger)
-        bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
-        bitbake('qemu-system-native -c addto_recipe_sysroot', output_log=self.logger)
-
         self.syz_native_sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
         self.qemu_native_sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'qemu-system-native')
 
         self.setUpSyzkallerConfig("linux/amd64", "x86_64")
+
+        bitbake(self.image, output_log=self.logger)
+        bitbake('syzkaller', output_log=self.logger)
+        bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
+        bitbake('qemu-system-native -c addto_recipe_sysroot', output_log=self.logger)
 
         runCmd(['syz-manager', '-config', self.syz_cfg], native_sysroot = self.syz_native_sysroot, timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
