@@ -14,7 +14,7 @@ SRCREV = "d0830353e30438120e98eb8b8c4c176095093fad"
 
 B = "${S}/src/${GO_IMPORT}/bin"
 
-GO_EXTRA_LDFLAGS += " -X ${GO_IMPORT}/prog.GitRevision=0"
+GO_EXTRA_LDFLAGS += ' -X ${GO_IMPORT}/prog.GitRevision=0'
 
 export GOHOSTFLAGS="${GO_LINKSHARED} ${GOBUILDFLAGS}"
 export GOTARGETFLAGS="${GO_LINKSHARED} ${GOBUILDFLAGS}"
@@ -34,7 +34,7 @@ do_compile:class-target() {
     export HOSTOS="${GOOS}"
     export HOSTARCH="${GOARCH}"
     export SYZ_CC_${TARGETOS}_${TARGETARCH}="${CC}"
-    oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}" target
+    oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}" REV=0 target
 }
 
 do_install:class-native() {
