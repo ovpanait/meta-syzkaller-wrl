@@ -7,11 +7,11 @@ from oeqa.utils.commands import runCmd, bitbake, get_bb_var, get_bb_vars
 from oeqa.utils.network import get_free_port
 
 class TestSyzkaller(OESelftestTestCase):
-    def setUpSyzkallerConfig(self):
+    def setUpSyzkallerConfig(self, os_arch, qemu_postfix):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
         syz_target = os.path.join(syz_target_sysroot, 'usr')
 
-        qemu_native_bin = os.path.join(self.qemu_native_sysroot, 'usr/bin/qemu-system-x86_64')
+        qemu_native_bin = os.path.join(self.qemu_native_sysroot, 'usr/bin/qemu-system-' + qemu_postfix)
         kernel_cmdline = "ip=dhcp rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
         kernel_objdir = self.deploy_dir_image
         port = get_free_port()
@@ -23,7 +23,7 @@ class TestSyzkaller(OESelftestTestCase):
             f.write(
 """
 {
-	"target": "linux/amd64",
+	"target": "%s",
 	"http": "127.0.0.1:%s",
 	"workdir": "%s",
 	"kernel_obj": "%s",
@@ -45,13 +45,11 @@ class TestSyzkaller(OESelftestTestCase):
 	}
 }
 """
-% (port, self.syz_workdir, kernel_objdir, self.kernel_src, self.rootfs,
-   syz_target, self.syz_qemu_vms, self.kernel, kernel_cmdline,
+% (os_arch, port, self.syz_workdir, kernel_objdir, self.kernel_src,
+   self.rootfs, syz_target, self.syz_qemu_vms, self.kernel, kernel_cmdline,
    self.syz_qemu_cpus, self.syz_qemu_mem, qemu_native_bin))
 
-    def setUpLocal(self):
-        super(TestSyzkaller, self).setUpLocal()
-
+    def test_syzkallerFuzzingQemux86_64(self):
         self.image = 'core-image-minimal'
         self.machine = 'qemux86-64'
         self.fstype = "ext4"
@@ -118,7 +116,6 @@ SYZ_QEMU_CPUS="2"'    # number of cpus used by each qemu VM
         self.syz_native_sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
         self.qemu_native_sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'qemu-system-native')
 
-        self.setUpSyzkallerConfig()
+        self.setUpSyzkallerConfig("linux/amd64", "x86_64")
 
-    def test_syzkaller(self):
         runCmd(['syz-manager', '-config', self.syz_cfg], native_sysroot = self.syz_native_sysroot, timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
