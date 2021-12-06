@@ -62,7 +62,7 @@ MACHINE = "%s"
 IMAGE_FSTYPES = "%s"
 KERNEL_IMAGETYPES += "vmlinux"
 EXTRA_IMAGE_FEATURES += " ssh-server-openssh"
-IMAGE_ROOTFS_EXTRA_SPACE = "64000"
+IMAGE_ROOTFS_EXTRA_SPACE = "512000"
 """
 % (self.machine, self.fstype))
 
