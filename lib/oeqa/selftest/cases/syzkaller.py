@@ -75,7 +75,19 @@ IMAGE_ROOTFS_EXTRA_SPACE = "512000"
 
         for var in syz_fuzz_vars:
                 if not bb_vars[var]:
-                    self.skipTest('%s variable not set. Please configure %s fuzzing parameters to run this test.' % (var, ', '.join(syz_fuzz_vars)))
+                    self.skipTest(
+"""
+%s variable not set.
+Please configure %s fuzzing parameters to run this test.
+
+Example local.conf config:
+SYZ_WORKDIR="<path>"  # syzkaller workdir location (must be persistent across os-selftest runs)
+SYZ_FUZZTIME="30"     # fuzzing time in minutes
+SYZ_QEMU_VM_COUNT="1" # number of qemu VMs to be used for fuzzing
+SYZ_QEMU_MEM="2048"'  # memory used by each qemu VM
+SYZ_QEMU_CPUS="2"'    # number of cpus used by each qemu VM
+"""
+% (var, ', '.join(syz_fuzz_vars)))
 
         self.topdir = bb_vars['TOPDIR']
         self.deploy_dir_image = bb_vars['DEPLOY_DIR_IMAGE']
