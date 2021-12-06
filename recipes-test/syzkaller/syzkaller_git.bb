@@ -34,11 +34,11 @@ do_compile:class-target() {
     export HOSTOS="${GOOS}"
     export HOSTARCH="${GOARCH}"
     export SYZ_CC_${TARGETOS}_${TARGETARCH}="${CC}"
-    oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}"
+    oe_runmake CC="${CC}" CFLAGS="${CFLAGS} ${LDFLAGS}" target
 }
 
-do_install() {
-    SYZ_BINS_COMMON="\
+do_install:class-native() {
+    SYZ_BINS_NATIVE="\
         syz-manager \
         syz-runtest \
         syz-repro \
@@ -50,12 +50,12 @@ do_install() {
 
     install -d ${D}${bindir}
 
-    for i in ${SYZ_BINS_COMMON}; do
+    for i in ${SYZ_BINS_NATIVE}; do
         install -m 0755 ${B}/${i} ${D}${bindir}
     done
 }
 
-do_install:append:class-target() {
+do_install:class-target() {
     SYZ_TARGET_DIR="${TARGETOS}_${TARGETARCH}"
     SYZ_BINS_TARGET=" \
         syz-fuzzer \
