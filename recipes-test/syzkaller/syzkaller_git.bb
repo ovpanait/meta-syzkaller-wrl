@@ -10,7 +10,7 @@ SRC_URI = "git://${GO_IMPORT};protocol=https;destsuffix=${BPN}-${PV}/src/${GO_IM
            file://0001-sys-targets-targets.go-allow-hardcoded-cross-compile.patch;patchdir=src/${GO_IMPORT} \
            "
 
-SRCREV = "6e821dbf79b49f1952fc147f237aa0f396790edc"
+SRCREV = "45a13a7381e60020d94d037d88a75727984b7a9a"
 
 B = "${S}/src/${GO_IMPORT}/bin"
 
