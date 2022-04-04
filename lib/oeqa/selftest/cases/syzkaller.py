@@ -61,6 +61,9 @@ IMAGE_FSTYPES = "%s"
 KERNEL_IMAGETYPES += "vmlinux"
 EXTRA_IMAGE_FEATURES += " ssh-server-openssh"
 IMAGE_ROOTFS_EXTRA_SPACE = "512000"
+KERNEL_EXTRA_FEATURES += " \
+    cfg/debug/syzkaller/debug-syzkaller.scc \
+"
 """
 % (self.machine, self.fstype))
 
@@ -113,9 +116,16 @@ SYZ_QEMU_CPUS="2"'    # number of cpus used by each qemu VM
 
         self.setUpSyzkallerConfig("linux/amd64", "x86_64")
 
+        result = runCmd("bitbake -e syzkaller | sed -n -e 's/export CC=\"\(.*\)\"/\\1/p'")
+        cc = result.output
+        cc_path = get_bb_var('STAGING_BINDIR_TOOLCHAIN', 'syzkaller')
+        cmd = "PATH=\"%s:$PATH\" " % cc_path
+        cmd += "SYZ_CC_linux_amd64=\"%s\" " % cc
+        cmd += "syz-manager -config %s" % self.syz_cfg
+
         bitbake(self.image, output_log=self.logger)
         bitbake('syzkaller', output_log=self.logger)
         bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
         bitbake('qemu-system-native -c addto_recipe_sysroot', output_log=self.logger)
 
-        runCmd(['syz-manager', '-config', self.syz_cfg], native_sysroot = self.syz_native_sysroot, timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=False)
+        runCmd(cmd, native_sysroot = self.syz_native_sysroot, timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=True)
