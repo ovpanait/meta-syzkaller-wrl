@@ -24,6 +24,8 @@ export TARGETVMARCH = '${GOARCH}'
 
 CGO_ENABLED = "0"
 
+DEPENDS:class-native += "qemu-system-native"
+
 do_compile:class-native() {
     export HOSTOS="${GOHOSTOS}"
     export HOSTARCH="${GOHOSTARCH}"
