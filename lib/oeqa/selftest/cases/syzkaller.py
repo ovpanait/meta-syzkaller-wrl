@@ -115,10 +115,9 @@ SYZ_QEMU_CPUS="2"'    # number of cpus used by each qemu VM
 
         self.setUpSyzkallerConfig("linux/amd64", "x86_64")
 
+        bitbake(self.image)
+        bitbake('syzkaller')
+        bitbake('syzkaller-native -c addto_recipe_sysroot')
+
         cmd = "syz-manager -config %s" % self.syz_cfg
-
-        bitbake(self.image, output_log=self.logger)
-        bitbake('syzkaller', output_log=self.logger)
-        bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
-
         runCmd(cmd, native_sysroot = self.syz_native_sysroot, timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=True)
