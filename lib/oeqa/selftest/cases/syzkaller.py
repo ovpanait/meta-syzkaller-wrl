@@ -11,7 +11,7 @@ class TestSyzkaller(OESelftestTestCase):
         syz_target_sysroot = get_bb_var('PKGD', 'syzkaller')
         syz_target = os.path.join(syz_target_sysroot, 'usr')
 
-        qemu_native_bin = os.path.join(self.qemu_native_sysroot, 'usr/bin/qemu-system-' + qemu_postfix)
+        qemu_native_bin = os.path.join(self.syz_native_sysroot, 'usr/bin/qemu-system-' + qemu_postfix)
         kernel_cmdline = "ip=dhcp rootfs=/dev/sda dummy_hcd.num=%s" % (self.dummy_hcd_num)
         kernel_objdir = self.deploy_dir_image
         port = get_free_port()
@@ -112,20 +112,13 @@ SYZ_QEMU_CPUS="2"'    # number of cpus used by each qemu VM
         self.rootfs = os.path.join(self.deploy_dir_image, '%s-%s.%s' % (self.image, self.machine, self.fstype))
 
         self.syz_native_sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'syzkaller-native')
-        self.qemu_native_sysroot = get_bb_var('RECIPE_SYSROOT_NATIVE', 'qemu-system-native')
 
         self.setUpSyzkallerConfig("linux/amd64", "x86_64")
 
-        result = runCmd("bitbake -e syzkaller | sed -n -e 's/export CC=\"\(.*\)\"/\\1/p'")
-        cc = result.output
-        cc_path = get_bb_var('STAGING_BINDIR_TOOLCHAIN', 'syzkaller')
-        cmd = "PATH=\"%s:$PATH\" " % cc_path
-        cmd += "SYZ_CC_linux_amd64=\"%s\" " % cc
-        cmd += "syz-manager -config %s" % self.syz_cfg
+        cmd = "syz-manager -config %s" % self.syz_cfg
 
         bitbake(self.image, output_log=self.logger)
         bitbake('syzkaller', output_log=self.logger)
         bitbake('syzkaller-native -c addto_recipe_sysroot', output_log=self.logger)
-        bitbake('qemu-system-native -c addto_recipe_sysroot', output_log=self.logger)
 
         runCmd(cmd, native_sysroot = self.syz_native_sysroot, timeout=self.syz_fuzztime, output_log=self.logger, ignore_status=True, shell=True)
